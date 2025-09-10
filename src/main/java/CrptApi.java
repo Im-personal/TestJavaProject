@@ -14,6 +14,7 @@ public class CrptApi {
 
     private final RateLimiter rateLimiter;
     private final String token;
+    private final HttpClient client;
 
     public enum DocumentType {
         AGGREGATION_DOCUMENT,
@@ -146,6 +147,7 @@ public class CrptApi {
                 .timeoutDuration(Duration.ofSeconds(5))
                 .build();
         rateLimiter = RateLimiter.of("api-rate-limiter", config);
+        client = HttpClient.newHttpClient();
     }
 
     public CrptApi(String token, Duration timeoutDuration, int requestLimit) {
@@ -156,6 +158,7 @@ public class CrptApi {
                 .timeoutDuration(Duration.ofSeconds(5))
                 .build();
         rateLimiter = RateLimiter.of("api-rate-limiter", config);
+        client = HttpClient.newHttpClient();
 
     }
 
@@ -173,16 +176,13 @@ public class CrptApi {
                 .POST(HttpRequest.BodyPublishers.ofString(json.toString()))
                 .build();
 
-        HttpClient client = HttpClient.newHttpClient();
+
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return response.body();
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to create document", e);
         }
-
-
-        return "{\"error\":408 , \"error_message\":\"Request Timeout\", \"description\":\"Время ожидания истекло\"}";
     }
 
 }
